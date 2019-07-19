@@ -64,7 +64,7 @@ class ClientHandler implements Runnable
 		{
 			log("Please enter a name"); //Tell the user
 		}
-	}	
+	}
 
 
 	public void commandLogout() throws IOException // usage: /logout - log out from chat
@@ -77,8 +77,10 @@ class ClientHandler implements Runnable
 	public void commandUsers() throws IOException
 	{
 		String msg = "Online users: ";
-		for (ClientHandler user : Server.users) //For everyone
-			if (user != Server.users.get(Server.users.size() -1)) msg += name + ", ";
+		for (ClientHandler user : Server.users) { //For everyone
+			msg += name;
+			if (!user.equals(Server.users.get(Server.users.size() - 1))) msg += ", ";
+		}
 		log(msg);
 	}
 
@@ -88,7 +90,7 @@ class ClientHandler implements Runnable
 	{
 		String message;
 
-		try 
+		try
 		{
 			post("[" + this.name + " has entered the chat" + "]"); //When first joining, send a join message
 		}
@@ -105,7 +107,7 @@ class ClientHandler implements Runnable
 				message = is.readUTF();
 
 
-				//Command handling 
+				//Command handling
 				if(message.startsWith("/"))
 				{
 					String command = message.split(" ", 0)[0].substring(1).toLowerCase(); //Get the command word given
@@ -115,7 +117,7 @@ class ClientHandler implements Runnable
 							commandLogout();
 						break;
 
-						
+
 						case "name":
 							commandName(message,command);
 						break;
@@ -135,17 +137,17 @@ class ClientHandler implements Runnable
 				{
 					post(this.name + ": " + message); //Print the username followed by their message
 				}
-			} 
+			}
 			catch (IOException e)
 			{
-				e.printStackTrace(); 
+				e.printStackTrace();
 			}
 		}
 		try //When while loop is closed (user logs out)
-		{				
+		{
 			this.is.close();
 			this.os.close();
-		} 
+		}
 		catch(IOException e)
 		{
 			e.printStackTrace();
