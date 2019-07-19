@@ -43,3 +43,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# IntelliJ stuff
+.idea/
