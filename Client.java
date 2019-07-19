@@ -1,16 +1,16 @@
-import java.io.*; 
-import java.net.*; 
-import java.util.Scanner; 
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.text.DefaultCaret;
 import javax.swing.border.Border;
 import java.lang.Integer;
-  
-public class Client  
-{ 
-    private static int port; 
+
+public class Client
+{
+    private static int port;
     private static JFrame frame;
     private static JPanel panel;
     private static JTextField textField;
@@ -28,9 +28,9 @@ public class Client
 
 
     public static void main(String args[]) throws UnknownHostException, IOException
-    { 
+    {
 
-        
+
 
 
         //Frame
@@ -44,7 +44,7 @@ public class Client
         textField = new JTextField(16); //Name
         textField1 = new JTextField(16); //IP
         textField2 = new JTextField(16); //Port
- 
+
         label = new JLabel("Name:");
         label1 = new JLabel("IP:");
         label2 = new JLabel("Port:");
@@ -59,10 +59,7 @@ public class Client
         panel.add(textField2);
 
         button = new JButton("Connect");
-        button.addActionListener(new ActionListener() 
-        { 
-            public void actionPerformed(ActionEvent event) 
-            { 
+        button.addActionListener( (ActionEvent event) -> {
                 try
                 {
                     String loginName = textField.getText();
@@ -79,40 +76,39 @@ public class Client
                 {
                     e.printStackTrace();
                 }
-            } 
         });
         //Layout
         frame.getContentPane().add(BorderLayout.CENTER, panel);
         frame.getContentPane().add(BorderLayout.SOUTH, button);
         frame.setVisible(true);
-    } 
+    }
 
-    public static void connect(String loginName, String loginIP, String loginPort) throws UnknownHostException, IOException, SocketException 
+    public static void connect(String loginName, String loginIP, String loginPort) throws UnknownHostException, IOException, SocketException
     {
-            // getting localhost ip 
-            
+            // getting localhost ip
+
             Socket s = new Socket();
-            // establish the connection 
+            // establish the connection
             try
             {
-                InetAddress ip = InetAddress.getByName(loginIP); 
+                InetAddress ip = InetAddress.getByName(loginIP);
                 int port = Integer.parseInt(loginPort);
-                s = new Socket(ip, port); 
+                s = new Socket(ip, port);
             }
             catch(Exception e)
-            {   
+            {
                 frame = new JFrame(); //Title text
                 JOptionPane.showMessageDialog(frame, e.toString(), "Error", JOptionPane.ERROR_MESSAGE);
             }
 
-              
-              
-            // obtaining input and out streams 
-            DataInputStream is = new DataInputStream(s.getInputStream()); 
-            DataOutputStream os = new DataOutputStream(s.getOutputStream()); 
+
+
+            // obtaining input and out streams
+            DataInputStream is = new DataInputStream(s.getInputStream());
+            DataOutputStream os = new DataOutputStream(s.getOutputStream());
             ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
 
-            String name = new String(loginName); 
+            String name = new String(loginName);
             oos.writeObject(name);
             oos.flush();
 
@@ -124,11 +120,11 @@ public class Client
 
 
             //Text box
-            textField = new JTextField(140); //Create text field 
+            textField = new JTextField(140); //Create text field
 
             //Text area
             textArea = new JTextArea(); //Text area for chat
-            textArea.setColumns(1); 
+            textArea.setColumns(1);
             textArea.setLineWrap(true);
             textArea.setRows(20);
             textArea.setWrapStyleWord(true);
@@ -145,62 +141,47 @@ public class Client
             //Layout
             frame.getContentPane().add(BorderLayout.CENTER, panel);
             frame.getContentPane().add(BorderLayout.NORTH, scrollPanel);
-            frame.setVisible(true);      
+            frame.setVisible(true);
 
-            // sendMessage thread 
-            Thread sendMessage = new Thread(new Runnable()  
-            { 
-                @Override
-                public void run() 
-                { 
-            textField.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent event)
-                {
-
+            // sendMessage thread
+            Thread sendMessage = new Thread( () -> {
+            textField.addActionListener((ActionEvent event) -> {
                     String message = textField.getText();
-                          
-                    try 
-                    { 
-                        // write on the output stream 
-                         os.writeUTF(message); 
-                    } 
-                    catch (IOException e) 
-                    { 
-                        e.printStackTrace(); 
+
+                    try
+                    {
+                        // write on the output stream
+                         os.writeUTF(message);
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
                     }
                     textField.setText("");
-                }
             });
-                } 
-            }); 
-              
-            // readMessage thread 
-            Thread readMessage = new Thread(new Runnable()  
-            { 
-                @Override
-                public void run() 
-                { 
-      
-                    while (true) 
-                    { 
-                        try 
-                        { 
-                            // read the message sent to this client 
+            });
+
+            // readMessage thread
+            Thread readMessage = new Thread( () ->{
+
+                    while (true)
+                    {
+                        try
+                        {
+                            // read the message sent to this client
                             String message = is.readUTF();
                             textArea.append(message + "\n");
-                        } 
-                        catch (IOException e) 
-                        { 
-                            
+                        }
+                        catch (IOException e)
+                        {
+
                             //e.printStackTrace();
-                        } 
-                    } 
-                } 
-            }); 
-      
-            sendMessage.start(); 
-            readMessage.start(); 
-      
+                        }
+                    }
+            });
+
+            sendMessage.start();
+            readMessage.start();
+
         }
-} 
+}
