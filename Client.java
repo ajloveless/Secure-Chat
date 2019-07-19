@@ -10,7 +10,7 @@ import java.lang.Integer;
   
 public class Client  
 { 
-    final static int port = 1245; 
+    private static int port; 
     private static JFrame frame;
     private static JPanel panel;
     private static JTextField textField;

@@ -27,15 +27,51 @@ class ClientHandler implements Runnable
 	}
 
 
-	public void log(String msg) throws IOException
+	public void log(String msg) throws IOException //Writes only to client side
 	{
-		this.os.writeUTF("[" + msg + "]");
+		this.os.writeUTF("[" + msg + "]"); //Write to own output stream
 	}
 
-	public void post(String msg) throws IOException
+	public void post(String msg) throws IOException //Writes to server side
 	{
-		for (ClientHandler recipient : Server.users)
-			recipient.os.writeUTF(msg);
+		for (ClientHandler recipient : Server.users) //For everyone
+			recipient.os.writeUTF(msg); //Write to their output stream
+	}
+
+
+	//Commands
+	public void commandName(String message, String command) throws IOException // usage: /name <name> - change display name
+	{
+		Boolean unique = true; //Assume the new name is unique
+		if (message.length() > command.length() + 2) //Check if the command has an argument
+		{
+			String newName = message.substring(command.length() + 2); //What the new name should be
+			for (ClientHandler usr : Server.users) //Check all clients connected
+			{
+				if (usr.name.equals(newName)) //If they already have the name selected
+				{
+					unique = false; //The name is not unique
+					log("The name \"" + newName + "\" is already taken"); //Tell the user
+				}
+			}
+			if (unique) //If the name is unique
+			{
+				post("[" + this.name + " changed their name to " + newName + "]"); //Tell the user
+				this.name = newName; //Update the name
+			}
+		}
+		else //If a name wasn't given
+		{
+			log("Please enter a name"); //Tell the user
+		}
+	}	
+
+
+	public void commandLogout() throws IOException // usage: /logout - log out from chat
+	{
+		this.loggedIn = false; //Break while loop
+		post("[" + this.name + " has logged out" + "]"); //Tell others on the server
+		Server.users.remove(Server.users.indexOf(this)); //Remove from active users list
 	}
 
 
@@ -47,7 +83,7 @@ class ClientHandler implements Runnable
 
 		try 
 		{
-			post("[" + this.name + " has entered the chat" + "]");
+			post("[" + this.name + " has entered the chat" + "]"); //When first joining, send a join message
 		}
 		catch(IOException e)
 		{
@@ -62,45 +98,19 @@ class ClientHandler implements Runnable
 				message = is.readUTF();
 
 
-
+				//Command handling 
 				if(message.startsWith("/"))
 				{
-					String command = message.split(" ", 0)[0].substring(1).toLowerCase();
+					String command = message.split(" ", 0)[0].substring(1).toLowerCase(); //Get the command word given
 					switch(command)
 					{
 						case "logout":
-							this.loggedIn = false;
-							post("[" + this.name + " has logged out" + "]");
-							Server.users.remove(Server.users.indexOf(this));
-
-
-							//this.s.close();
+							commandLogout();
 						break;
 
 						
 						case "name":
-							Boolean unique = true;
-							if (message.length() > command.length() + 2)
-							{
-								String newName = message.substring(command.length() + 2);
-								for (ClientHandler usr : Server.users)
-								{
-									if (usr.name.equals(newName))
-									{
-										unique = false;
-										log("The name \"" + newName + "\" is already taken");
-									}
-								}
-								if (unique)
-								{
-									post("[" + this.name + " changed their name to " + newName + "]");
-									this.name = newName;
-								}
-							}
-							else
-							{
-								log("Please enter a name");
-							}
+							commandName(message,command);
 						break;
 
 						default:
@@ -110,9 +120,9 @@ class ClientHandler implements Runnable
 
 					}
 				}
-				else
+				else //If no command was issued
 				{
-					post(this.name + ": " + message);
+					post(this.name + ": " + message); //Print the username followed by their message
 				}
 			} 
 			catch (IOException e)
@@ -120,10 +130,8 @@ class ClientHandler implements Runnable
 				e.printStackTrace(); 
 			}
 		}
-		try
-		{	
-			//Close resources
-
+		try //When while loop is closed (user logs out)
+		{				
 			this.is.close();
 			this.os.close();
 		} 

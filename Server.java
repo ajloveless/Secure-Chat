@@ -13,48 +13,45 @@ import java.util.StringTokenizer;
 public class Server
 {
 	//Arraylist of clients
-	static ArrayList<ClientHandler> users = new ArrayList<ClientHandler>();
+	static ArrayList<ClientHandler> users = new ArrayList<ClientHandler>(); //Create array list of active users
 
 	public static void main(String[] args) throws IOException 
 	{
-		ServerSocket ss = new ServerSocket(1245);
+		ServerSocket ss = new ServerSocket(1245); //Create server socket with specified port
 
 		Socket s;
-		String name = "" + (users.size() + 1);
+		String name = ""; //Placeholder for client
 
 		//Loop client requests
 		while (true)
 		{
-			//Accept incoming requests
+			//Accept incoming requests as they come in
 			s = ss.accept();
 
+			//Get input and output streams
+			DataInputStream is = new DataInputStream(s.getInputStream());
+			DataOutputStream os = new DataOutputStream(s.getOutputStream());
 			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+
 			try
 			{
-				name = (String) ois.readObject();
+				name = (String) ois.readObject(); //Receive name variable as given by client
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
 			}
 
-			System.out.println("New client " + s);
+			System.out.println(name + " has connected"); //Server log
 
-			//Get input and output streams
-			DataInputStream is = new DataInputStream(s.getInputStream());
-			DataOutputStream os = new DataOutputStream(s.getOutputStream());
+			ClientHandler handler = new ClientHandler(s, name, is, os); //Handler deals with sending and receiving messages
 
-			System.out.println("Creating handler for client...");
+			Thread t = new Thread(handler); //Run handler on a new thread
 
-			ClientHandler handler = new ClientHandler(s, name, is, os);
-
-			Thread t = new Thread(handler);
-
-			System.out.println("Adding client to active client list");
-
+			System.out.println("Adding " + name + " to active client list"); //Add user to active client list
 			users.add(handler);
 
-			t.start();
+			t.start(); //Start the thread
 
 
 		}
