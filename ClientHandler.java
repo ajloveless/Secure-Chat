@@ -74,6 +74,13 @@ class ClientHandler implements Runnable
 		Server.users.remove(Server.users.indexOf(this)); //Remove from active users list
 	}
 
+	public void commandUsers() throws IOException
+	{
+		String msg = "Online users: ";
+		for (ClientHandler user : Server.users) //For everyone
+			if (user != Server.users.get(Server.users.size() -1)) msg += name + ", ";
+		log(msg);
+	}
 
 
 	@Override
@@ -111,6 +118,10 @@ class ClientHandler implements Runnable
 						
 						case "name":
 							commandName(message,command);
+						break;
+
+						case "users":
+							commandUsers();
 						break;
 
 						default:
